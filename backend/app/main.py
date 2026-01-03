@@ -73,33 +73,33 @@ async def websocket_student_endpoint(websocket: WebSocket):
     await manager.connect_student(websocket)
     try:
         while True:
-            # Receive video frame from student
+            # This is for Receive video frame from student
             data = await websocket.receive_text()
             frame_data = json.loads(data)
             
-            # Decode base64 image
+            # This is for Decode base64 image
             image_data = base64.b64decode(frame_data['image'].split(',')[1])
             nparr = np.frombuffer(image_data, np.uint8)
             frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
             
             if frame is not None:
-                # Analyze frame
+                # This is for Analyze frame
                 analysis = analyzer.analyze_frame(frame)
                 
-                # Store in session data
+                # This is for Store in session data
                 session_data.append(analysis)
                 
-                # Keep only last 1000 data points
+                # This is for Keep only last 1000 data points
                 if len(session_data) > 1000:
                     session_data.pop(0)
                 
-                # Send analysis back to student
+                # This is for Send analysis back to student
                 await websocket.send_text(json.dumps({
                     "type": "analysis",
                     "data": analysis
                 }))
                 
-                # Broadcast to teachers
+                # This is for Broadcast to teachers
                 await manager.broadcast_to_teachers({
                     "type": "student_update",
                     "data": analysis
